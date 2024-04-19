@@ -10,13 +10,13 @@ def parse_spam_dataset(filename, zero_class, one_class):
             line_idx += 1
             line = line.strip()
             i = 0
-            while i < len(line) and line[i] != " ":
+            while i < len(line) and not line[i].isspace():
                 i += 1
             if i==len(line):
                 print(f"The class is not provided in the {line_idx}'th record")
                 exit(1)
             else:
-                _class = line[:i-1]
+                _class = line[:i]
                 text = line[i+1]
                 if _class == zero_class:
                     dataset_dict[0].append(text)
