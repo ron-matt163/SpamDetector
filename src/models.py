@@ -9,6 +9,6 @@ def build_classifier_model():
   embeddings = roberta_tf(input_word_ids, attention_mask = input_mask)[0]
   net = tf.keras.layers.GlobalMaxPool1D()(embeddings)
   net = tf.keras.layers.Dropout(0.45)(net)
-  op = tf.keras.layers.Dense(26, activation='softmax')(net)
+  op = tf.keras.layers.Dense(2, activation='softmax')(net)
   return tf.keras.Model(inputs=[input_word_ids, input_mask], outputs=op)  
 
