@@ -64,7 +64,7 @@ def train_model(train_df, test_df):
 if __name__ == "__main__":
   os.environ['CUDA_VISIBLE_DEVICES'] = "0"
   os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
-  BATCH_SIZE = 32
+  BATCH_SIZE = 1
   SEED = 42
 
   texts, labels = parse_spam_dataset(filename="../data/SMSSpamCollection", zero_class="ham", one_class="spam")
