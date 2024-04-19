@@ -20,7 +20,7 @@ from models import build_classifier_model
 from preprocess import parse_spam_dataset, remove_punctuation, detect_and_shorten_url, remove_empty_rows
 
 
-def train_model(train_df):
+def train_model(train_df, test_df):
   # Print class distribution for verification
   print("Training class distribution:\n", train_df['Label'].value_counts(normalize=True))
   print("Test class distribution:\n", test_df['Label'].value_counts(normalize=True))
@@ -38,7 +38,7 @@ def train_model(train_df):
   classifier_model = build_classifier_model()
   loss = tf.keras.losses.CategoricalCrossentropy()
   metrics = tf.metrics.CategoricalAccuracy()
-  epochs = 12
+  epochs = 10
   steps_per_epoch = tf.data.experimental.cardinality(train_dataset).numpy()
   num_train_steps = steps_per_epoch * epochs
   num_warmup_steps = int(0.1*num_train_steps)
