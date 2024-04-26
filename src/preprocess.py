@@ -1,6 +1,8 @@
 import numpy as np
 import re
 from nltk.tokenize import RegexpTokenizer
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def parse_spam_dataset(filename, zero_class, one_class):
     dataset_dict = {0:[], 1:[]}
@@ -51,3 +53,35 @@ def remove_empty_rows(df):
     df_cleaned = df.dropna(subset=['Text', 'Label'])
     df_cleaned.reset_index(drop=True, inplace=True)
     return df_cleaned
+
+def plot_class_frequency(texts, labels):
+    class_counts = {label: labels.count(label) for label in set(labels)}
+    plt.figure(figsize=(8, 6))
+    plt.bar(class_counts.keys(), class_counts.values(), color=['blue', 'red'])
+    plt.xlabel('Class Label')
+    plt.ylabel('Frequency')
+    plt.title('Class Frequency')
+    plt.xticks(list(class_counts.keys()), ['Ham', 'Spam'])
+    plt.show('../fig/classfreq.png')
+
+
+def plot_text_lengths(texts, labels):
+    text_lengths = [len(text) for text, label in zip(texts, labels)]
+    avg_lengths_by_class = {label: np.mean([length for length, l in zip(text_lengths, labels) if l == label]) for label in set(labels)}
+    print("\n\nAverage length of ham texts in the dataset: ", avg_lengths_by_class[0])
+    print("Average length of spam texts in the dataset: ", avg_lengths_by_class[1])
+
+    text_lengths_by_class = {label: [length for length, l in zip(text_lengths, labels) if l == label] for label in set(labels)}
+    plt.figure(figsize=(8, 6))
+    sns.boxplot(x=labels, y=text_lengths)
+    plt.xlabel('Class Label')
+    plt.ylabel('Text Length')
+    plt.title('Boxplot of Text Lengths by Class')
+    plt.xticks([0, 1], ['Ham', 'Spam'])
+    plt.savefig('../fig/textlength_boxplot.png')
+
+
+def spam_dataset_stats(texts, labels):
+    # Number of entries for each class
+    plot_class_frequency(texts, labels)
+    plot_text_lengths(texts, labels)
