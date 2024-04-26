@@ -1,1 +1,13 @@
 For transformer-based algorithms, text processing might negatively affect model performance.
+
+Number of hams: 4827, Number of spams: 747
+Training class distribution:
+ Label
+0    0.865932
+1    0.134068
+Name: proportion, dtype: float64
+Test class distribution:
+ Label
+0    0.866109
+1    0.133891
+Name: proportion, dtype: float64
