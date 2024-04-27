@@ -6,138 +6,31 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
 import seaborn as sns
-# os.environ['CUDA_VISIBLE_DEVICES'] = "0"
-# os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
-
-
-# gdown.download('https://drive.google.com/uc?id=1SucKmwpwhoptI7eO3XQM4AjibWaJc9oc', quiet=False)
-# with zipfile.ZipFile('BERT_trial_1_model_new16Nov-20231116T234003Z-001.zip', 'r') as zip_ref:
-#     zip_ref.extractall()
-
-# dataset_path = '../data/SMSSpamCollection'
-# df = pd.read_json(dataset_path, lines=True)
-# # Converting to lower case
-# df = df.applymap(lambda x: x.lower() if isinstance(x, str) else x)
-
-# # Dropping entries with NULL values
-# df = df.dropna()
-
-# links = df["link"]
-# dates = df["date"]
-
-# # Dropping irrelevant attributes
-# df.drop('link', axis=1)
-# df.drop('date', axis=1)
-
-# df["category"] = df["category"].replace(
-#               {"healthy living": "wellness",
-#               "queer voices": "groups voices",
-#               "worldpost": "world news",
-#               "science": "science & tech",
-#               "tech": "science & tech",
-#               "money": "business & finances",
-#               "arts": "arts & culture",
-#               "college": "education",
-#               "latino voices": "groups voices",
-#               "business": "business & finances",
-#               "parents": "parenting",
-#               "black voices": "groups voices",
-#               "the worldpost": "world news",
-#               "style": "style & beauty",
-#               "green": "environment",
-#               "taste": "food & drink",
-#               "culture & arts": "arts & culture",
-#               "good news": "miscellaneous",
-#               "weird news": "miscellaneous",
-#               "fifty": "miscellaneous"}
-#             )
-
-# # Feature transformation for training
-
-# df['combined_text'] = df['headline'] + " " + df['short_description']
-
-# reduced_df = df[['combined_text', 'category']]
-# seed = 42
-
-# train_df, temp_df = train_test_split(reduced_df, test_size=0.3, stratify=reduced_df['category'], random_state=seed)
-# validation_df, test_df = train_test_split(temp_df, test_size=0.5, stratify=temp_df['category'], random_state=seed)
-
-# test_df.to_csv('test_dataset.csv', index=False)
-
-
-# # Create datasets using tf.data.Dataset
-# train_dataset = tf.data.Dataset.from_tensor_slices((train_df['combined_text'].values, pd.get_dummies(train_df['category'].values)))
-# validation_dataset = tf.data.Dataset.from_tensor_slices((validation_df['combined_text'].values, pd.get_dummies(validation_df['category'].values)))
-# test_dataset = tf.data.Dataset.from_tensor_slices((test_df['combined_text'].values, pd.get_dummies(test_df['category'].values)))
-
-# dataset_classes = pd.get_dummies(train_df['category'].values).columns.tolist()
-# print("\nDATASET CLASSES: ", dataset_classes)
-# print("\nActual test classes: \n", test_df['category'])
-
-# loaded_model = tf.saved_model.load('BERT_trial_1_model_new16Nov')
-
-# pred_classes = []
-# last_index = 0
-
-# for i in range(int(len(test_df)/1500)):
-#   pred = loaded_model(tf.constant((test_df['combined_text'].values.tolist())[i*1500:(i+1)*1500]))
-#   pred_classes_per_batch = [dataset_classes[i] for i in np.argmax(pred, axis=1)]
-#   pred_classes = pred_classes + pred_classes_per_batch
-#   last_index = i
-
-# pred = loaded_model(tf.constant((test_df['combined_text'].values.tolist())[(last_index+1)*1500:]))
-# pred_classes_per_batch = [dataset_classes[i] for i in np.argmax(pred, axis=1)]
-# pred_classes = pred_classes + pred_classes_per_batch
-# print("\n\nPredicted classes: \n", pred_classes)
-
-# print("Model performance based on the test dataset")
-
-# test_actual_classes = test_df["category"]
-# print("\n\nActual classes: \n", test_actual_classes)
-
-# test_df['prediction'] = pred_classes
-# test_df.to_csv('test_dataset_withpred.csv', index=False)
-
-
-# # Calculate metrics
-# accuracy = accuracy_score(test_actual_classes, pred_classes)
-# f1 = f1_score(test_actual_classes, pred_classes, average='weighted')
-# precision = precision_score(test_actual_classes, pred_classes, average='weighted')
-# recall = recall_score(test_actual_classes, pred_classes, average='weighted')
-
-# # Print metrics
-# print("Accuracy: {:.5f}".format(accuracy))
-# print("F1-score: {:.5f}".format(f1))
-# print("Precision: {:.5f}".format(precision))
-# print("Recall: {:.5f}".format(recall))
-
-
-# # for pred in pred_classes:
-# #   print(news_classes[pred])
-
-# # Confusion matrix
-# cm = confusion_matrix(test_actual_classes, pred_classes)
-
-# # Plot confusion matrix
-# plt.figure(figsize=(10, 8))
-# sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=pd.get_dummies(train_df['category'].values).columns.tolist(), yticklabels=pd.get_dummies(train_df['category'].values).columns.tolist())
-# plt.title("Confusion Matrix")
-# plt.xlabel("Predicted Labels")
-# plt.ylabel("True Labels")
-# plt.show()
+from transformers import RobertaTokenizer
+from config import *
 
 def test_model(test_df):
     loaded_model = tf.saved_model.load('../spam_roberta_classifier')
     pred_classes = []
-    # last_index = 0
+    last_index = 0
 
     # for i in range(int(len(test_df)/1500)):
     #     pred = loaded_model(tf.constant((test_df['combined_text'].values.tolist())[i*1500:(i+1)*1500]))
     #     pred_classes_per_batch = [dataset_classes[i] for i in np.argmax(pred, axis=1)]
     #     pred_classes = pred_classes + pred_classes_per_batch
     #     last_index = i
+    roberta_tokenizer = RobertaTokenizer.from_pretrained("roberta-base")
+    X_test_encoded = roberta_tokenizer(text=test_df["Text"].tolist(), padding='max_length', truncation=True, max_length=256,return_token_type_ids=True,return_tensors='tf')
+    test_dataset = tf.data.Dataset.from_tensor_slices(({'input_word_ids': X_test_encoded['input_ids'],'input_mask': X_test_encoded['attention_mask']}, pd.get_dummies(test_df['Label'].values))).shuffle(buffer_size=len(X_test_encoded)).batch(BATCH_SIZE).prefetch(1)
 
-    pred = loaded_model(tf.constant((test_df['Text'].values.tolist())))
+    TEST_BATCH_SIZE = 150
+    for i in range(int(len(test_df)/TEST_BATCH_SIZE)):
+        pred = loaded_model([X_test_encoded['input_ids'][i*TEST_BATCH_SIZE:(i+1)*TEST_BATCH_SIZE], X_test_encoded['attention_mask'][i*TEST_BATCH_SIZE:(i+1)*TEST_BATCH_SIZE]], training=False)
+        pred_classes_per_batch = [i for i in np.argmax(pred, axis=1)]
+        pred_classes = pred_classes + pred_classes_per_batch
+        last_index = i
+
+    pred = loaded_model([X_test_encoded['input_ids'][(last_index+1)*TEST_BATCH_SIZE:], X_test_encoded['attention_mask'][(last_index+1)*TEST_BATCH_SIZE:]], training=False)
     pred_classes_per_batch = [i for i in np.argmax(pred, axis=1)]
     pred_classes = pred_classes + pred_classes_per_batch
     print("\n\nPredicted classes: \n", pred_classes)
@@ -167,8 +60,8 @@ def test_model(test_df):
 
     # Plot confusion matrix
     plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=pd.get_dummies(test_df['Label'].values).columns.tolist(), yticklabels=pd.get_dummies(test_df['Label'].values).columns.tolist())
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=pd.get_dummies(["Ham", "Spam"]).columns.tolist(), yticklabels=pd.get_dummies(["Ham", "Spam"]).columns.tolist())
     plt.title("Confusion Matrix")
     plt.xlabel("Predicted Labels")
     plt.ylabel("True Labels")
-    plt.show('../fig/confmatrix.png')
+    plt.savefig('../figs/confmatrix.png')

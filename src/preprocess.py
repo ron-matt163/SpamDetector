@@ -19,7 +19,7 @@ def parse_spam_dataset(filename, zero_class, one_class):
                 exit(1)
             else:
                 _class = line[:i]
-                text = line[i+1]
+                text = line[i+1:]
                 if _class == zero_class:
                     dataset_dict[0].append(text)
                 elif _class == one_class:
@@ -54,7 +54,7 @@ def remove_empty_rows(df):
     df_cleaned.reset_index(drop=True, inplace=True)
     return df_cleaned
 
-def plot_class_frequency(texts, labels):
+def plot_class_frequency(labels):
     class_counts = {label: labels.count(label) for label in set(labels)}
     plt.figure(figsize=(8, 6))
     plt.bar(class_counts.keys(), class_counts.values(), color=['blue', 'red'])
@@ -62,26 +62,33 @@ def plot_class_frequency(texts, labels):
     plt.ylabel('Frequency')
     plt.title('Class Frequency')
     plt.xticks(list(class_counts.keys()), ['Ham', 'Spam'])
-    plt.show('../fig/classfreq.png')
+    plt.savefig('../figs/classfreq.png')
 
 
 def plot_text_lengths(texts, labels):
-    text_lengths = [len(text) for text, label in zip(texts, labels)]
-    avg_lengths_by_class = {label: np.mean([length for length, l in zip(text_lengths, labels) if l == label]) for label in set(labels)}
-    print("\n\nAverage length of ham texts in the dataset: ", avg_lengths_by_class[0])
-    print("Average length of spam texts in the dataset: ", avg_lengths_by_class[1])
+    text_lengths = {0:[], 1:[]}
+    # text_lengths = [len(text) for text, label in zip(texts, labels)]
+    for text, label in zip(texts, labels):
+        if label == 0:
+            text_lengths[0].append(len(text))
+        elif label == 1:
+            text_lengths[1].append(len(text))
+    # avg_lengths_by_class = {label: np.mean([length for length, l in zip(text_lengths, labels) if l == label]) for label in set(labels)}
+    # print("\nText lengths: ", text_lengths)
+    print("\n\nAverage length of ham texts in the dataset: ", np.mean(text_lengths[0]))
+    print("Average length of spam texts in the dataset: ", np.mean(text_lengths[1]))
 
-    text_lengths_by_class = {label: [length for length, l in zip(text_lengths, labels) if l == label] for label in set(labels)}
+    # text_lengths_by_class = {label: [length for length, l in zip(text_lengths, labels) if l == label] for label in set(labels)}
     plt.figure(figsize=(8, 6))
-    sns.boxplot(x=labels, y=text_lengths)
+    sns.boxplot([text_lengths[0], text_lengths[1]])
     plt.xlabel('Class Label')
     plt.ylabel('Text Length')
     plt.title('Boxplot of Text Lengths by Class')
     plt.xticks([0, 1], ['Ham', 'Spam'])
-    plt.savefig('../fig/textlength_boxplot.png')
+    plt.savefig('../figs/textlength_boxplot.png')
 
 
 def spam_dataset_stats(texts, labels):
     # Number of entries for each class
-    plot_class_frequency(texts, labels)
+    plot_class_frequency(labels)
     plot_text_lengths(texts, labels)

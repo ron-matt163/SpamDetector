@@ -18,6 +18,7 @@ if __name__ == "__main__":
 
   texts, labels = parse_spam_dataset(filename="../data/SMSSpamCollection", zero_class="ham", one_class="spam")
   # Dataset statistics
+  # print(f"Texts: {texts}, labels: {labels}")
   spam_dataset_stats(texts, labels)
 
   # Minimal text preprocessing
